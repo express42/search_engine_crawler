@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from re import findall, match
 from functools import lru_cache
 from time import time
-from pika import BlockingConnection, ConnectionParameters
+from pika import BlockingConnection, ConnectionParameters, PlainCredentials
 from os import getenv
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -39,10 +39,12 @@ def connect_db():
 
 def connect_to_mq():
     try:
+        credentials = PlainCredentials(mquser, mqpass)
         rabbit = BlockingConnection(ConnectionParameters(
             host=mqhost,
             connection_attempts=10,
-            retry_delay=1))
+            retry_delay=1,
+            credentials=credentials))
     except Exception as e:
         log.error('connect_to_MQ',
                   service="crawler",
@@ -76,6 +78,9 @@ exclude_urls = list(filter(None, getenv('EXCLUDE_URLS', '').split(',')))
 
 mqhost = getenv('RMQ_HOST', 'rabbit')
 mqqueue = getenv('RMQ_QUEUE', 'urls')
+
+mquser = getenv('RMQ_USERNAME', 'guest')
+mqpass = getenv('RMQ_PASSWORD', 'guest')
 
 def new_word(word):
     return db.words.insert( {'word': word})
