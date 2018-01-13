@@ -254,7 +254,7 @@ def callback(ch, method, properties, body):
 def publish_url(url):
     try:
         channel.basic_publish(exchange='',
-                              routing_key='urls',
+                              routing_key=mqqueue,
                               body=url)
     except Exception as e:
         log.error('publish_url',
